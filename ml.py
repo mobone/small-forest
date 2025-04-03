@@ -3,6 +3,7 @@ from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB 
 from sklearn.ensemble import RandomForestClassifier
+from mlxtend.classifier import EnsembleVoteClassifier
 import numpy as np
 import ta_py as ta
 
@@ -29,31 +30,28 @@ def get_overnight_percent_change():
     
     #data = data.reset_index()
     #print(data)
-    #print(ta.ao( [data['high'].values,data['low'].values] ))
+    
     #data['KAMA'] = ta.kama(data) # add Kaufman's Adaptive Moving Average
     #data['MOM'] = ta.mom(data)
-    
 
     # normalize volume column
     #data["Volume"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
     #data["Volume"] = (data["Volume"] - data["Volume"].min()) / (data["Volume"].max() - data["Volume"].min())  # Min-Max normalization
 
     
-    # add momentum indicator
-    
-
     data = data.dropna()
     print(data)
-    print(data.columns)
 
     return data
 
-#get_stock_history("TQQQ")
+
 data = get_overnight_percent_change()
 
 clf1 = LogisticRegression(random_state=1)
 clf2 = RandomForestClassifier(random_state=1)
 clf3 = GaussianNB()
+eclf = EnsembleVoteClassifier(clfs=[clf1, clf2, clf3], weights=[1,1,1])
+
 X = data[["Overnight Percent Change","Volume"]]
 y = np.where(data["Percent Change"] > 0, 1, -1)
 
@@ -70,15 +68,12 @@ for clf, label in zip([clf1, clf2, clf3], labels):
           % (scores.mean(), scores.std(), label))
 '''
 
-
-from mlxtend.classifier import EnsembleVoteClassifier
-
-eclf = EnsembleVoteClassifier(clfs=[clf1, clf2, clf3], weights=[1,1,1])
-
 labels = ['Logistic_Regression', 'Random_Forest', 'Naive_Bayes', 'Ensemble']
 
 buy_price = data["Open"].iloc[0]
 sell_price = data["Close"].iloc[len(data)-1]
+
+# print buy and hold strategy percent
 print("Stock Percent Change: ", (sell_price - buy_price) / buy_price)
 print()
 
@@ -105,7 +100,6 @@ for clf, label in zip([clf1, clf2, clf3, eclf], labels):
     import pickle
     filename = label+'_model.sav'
     pickle.dump(clf, open('./models/'+filename, 'wb'))
-
 
     # predict bins
     pred = clf.predict(X_test)
