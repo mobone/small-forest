@@ -70,10 +70,9 @@ for clf, label in zip([clf1, clf2, clf3], labels):
 
 labels = ['Logistic_Regression', 'Random_Forest', 'Naive_Bayes', 'Ensemble']
 
+# print buy and hold strategy percent
 buy_price = data["Open"].iloc[0]
 sell_price = data["Close"].iloc[len(data)-1]
-
-# print buy and hold strategy percent
 print("Stock Percent Change: ", (sell_price - buy_price) / buy_price)
 print()
 
