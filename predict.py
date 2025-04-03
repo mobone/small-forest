@@ -102,7 +102,18 @@ if now.hour < 12:
     )
     try:
         order_submission_response = trading_client.submit_order(order_data=order_request)
-        logging.info(order_submission_response)
+        
+        # sleep for 10 seconds
+        time.sleep(10)
+
+        # Check the order status
+        order_status = trading_client.get_order(order_id=order_submission_response.id)
+        logging.info(f"Order Status: {order_status.status}")
+        if order_status.status == "filled":
+            logging.info("Order filled successfully.")
+        else:
+            logging.warning(f"Order not filled, current status: {order_status.status}")
+
     except Exception as e:
         logging.error(f"Error while submitting order: {e}")
         exit(1)
@@ -144,8 +155,8 @@ if now.hour > 12:
     try:
         order_submission_response = trading_client.submit_order(order_data=order_request)
 
-        # sleep for 5 seconds
-        time.sleep(5)
+        # sleep for 10 seconds
+        time.sleep(10)
 
         # Check the order status
         order_status = trading_client.get_order(order_id=order_submission_response.id)
