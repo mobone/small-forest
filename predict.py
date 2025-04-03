@@ -19,6 +19,8 @@ from alpaca.trading.enums import TimeInForce
 
 import datetime
 import time
+import math 
+
 now = datetime.datetime.now()
 
 config = ConfigParser()
@@ -62,7 +64,9 @@ if now.hour < 12:
     prediction = clf.predict([[overnight_percent_change, yesterdays_volume]])[0]    
     logging.info(f"Prediction: {prediction}")
 
-    quantity = round((float(available_cash)/float(entry_price)),0)-3
+    quantity = math.floor( (float(available_cash) / float(entry_price) )) - 3
+
+    
     logging.info(f"Number of shares: {quantity}")
     logging.info(f"Entry Price: {entry_price}")
 
