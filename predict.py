@@ -37,23 +37,32 @@ trading_client = TradingClient(
 account = trading_client.get_account()
 available_cash = account.cash
 
-logging.info("Starting script")
+
 
 
 stock = yf.Ticker("TQQQ")
-data = stock.history(period='2d')
-print(data)
+data = stock.history()
+data = data.tail(2)  # Get the last two rows (yesterday and today)
+logging.info("Fetched stock data for TQQQ")
+logging.info(str(data))
+
 
 if now.hour < 12:
+    logging.info("Starting opening script")
     # read model from file
     model_filename = 'Naive_Bayes_model.sav'
 
     clf = pickle.load(open('./models/'+model_filename, 'rb'))
 
-    entry_price = data["Open"].iloc[1]
-
-    close_yesterday = data["Close"].iloc[0]
-    open_today = data["Open"].iloc[1]
+    
+    try:
+        entry_price = data["Open"].iloc[1]
+        close_yesterday = data["Close"].iloc[0]
+        open_today = data["Open"].iloc[1]
+    except Exception as e:
+        logging.error(f"Error fetching today's open price: {e}")
+        logging.info("Exiting script due to missing open price data.")
+        exit(1)
     overnight_percent_change = (open_today - close_yesterday) / close_yesterday
 
 
@@ -102,7 +111,7 @@ if now.hour < 12:
     )
     try:
         order_submission_response = trading_client.submit_order(order_data=order_request)
-        
+        print(dir(trading_client))
         # sleep for 10 seconds
         time.sleep(10)
 
@@ -123,6 +132,7 @@ if now.hour < 12:
 # if so, sell all shares
 
 if now.hour > 12:
+    logging.info("Starting closing script")
     # read order type from file
     with open('order_type.txt', 'r') as f:
         read_order_type = f.read()
@@ -133,14 +143,17 @@ if now.hour > 12:
     else:
         order_type = OrderSide.SELL
         logging.info("Order Type: BUY detected, selling to exit.")
-
+    
+    quantity = 0
     # determine how many shares we hold
     positions = trading_client.get_all_positions()
     for position in positions:
         if position.symbol == "TQQQ":
             quantity = position.qty
             logging.info(f"Current position quantity: {quantity}")
-
+    if quantity == 0:
+        logging.info("No shares to exit. Exiting script.")
+        exit(0)
     logging.info("Placing order")
     order_request = OrderRequest(
         symbol="TQQQ",
@@ -149,7 +162,7 @@ if now.hour > 12:
         type=OrderType.MARKET,
         order_class=OrderClass.SIMPLE,
         time_in_force=TimeInForce.DAY,
-        extended_hours=True
+        extended_hours=False
     )
 
     try:

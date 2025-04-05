@@ -1,12 +1,10 @@
-2025-04-03 08:31:09,190 - INFO - Starting script
-2025-04-03 08:31:17,357 - INFO - Prediction: 1
-2025-04-03 08:31:17,357 - INFO - Number of shares: 475.0
-2025-04-03 08:31:17,357 - INFO - Entry Price: 52.42300033569336
-2025-04-03 08:31:17,357 - INFO - Order Type: BUY
-2025-04-03 08:31:17,496 - ERROR - {"buying_power":"25000","code":40310000,"cost_basis":"25265.25","message":"insufficient buying power"}
-2025-04-03 09:19:21,336 - INFO - Starting script
-2025-04-03 09:19:23,491 - INFO - Prediction: 1
-2025-04-03 09:19:23,492 - INFO - Number of shares: 474.0
-2025-04-03 09:19:23,492 - INFO - Entry Price: 52.42300033569336
-2025-04-03 09:19:23,492 - INFO - Order Type: BUY
-2025-04-03 09:19:23,616 - INFO - id=UUID('5548a190-f85d-424e-9c43-e8f7d04a1847') client_order_id='7182c0fd-70f6-4eb7-8d20-b9bec9f95622' created_at=datetime.datetime(2025, 4, 3, 14, 19, 23, 48135, tzinfo=TzInfo(UTC)) updated_at=datetime.datetime(2025, 4, 3, 14, 19, 23, 48626, tzinfo=TzInfo(UTC)) submitted_at=datetime.datetime(2025, 4, 3, 14, 19, 23, 48135, tzinfo=TzInfo(UTC)) filled_at=None expired_at=None expires_at=datetime.datetime(2025, 4, 3, 20, 0, tzinfo=TzInfo(UTC)) canceled_at=None failed_at=None replaced_at=None replaced_by=None replaces=None asset_id=UUID('dce2ac30-c928-4416-be25-2213d057f30a') symbol='TQQQ' asset_class=<AssetClass.US_EQUITY: 'us_equity'> notional=None qty='474' filled_qty='0' filled_avg_price=None order_class=<OrderClass.SIMPLE: 'simple'> order_type=<OrderType.MARKET: 'market'> type=<OrderType.MARKET: 'market'> side=<OrderSide.BUY: 'buy'> time_in_force=<TimeInForce.DAY: 'day'> limit_price=None stop_price=None status=<OrderStatus.PENDING_NEW: 'pending_new'> extended_hours=False legs=None trail_percent=None trail_price=None hwm=None position_intent=<PositionIntent.BUY_TO_OPEN: 'buy_to_open'> ratio_qty=None
+2025-04-04 14:58:11,332 - INFO - Fetched stock data for TQQQ
+2025-04-04 14:58:11,345 - INFO -                                 Open       High        Low  ...  Dividends  Stock Splits  Capital Gains
+Date                                                        ...                                        
+2025-04-03 00:00:00-04:00  52.430000  53.830002  50.110001  ...        0.0           0.0            0.0
+2025-04-04 00:00:00-04:00  45.990002  46.779999  41.060001  ...        0.0           0.0            0.0
+
+[2 rows x 8 columns]
+2025-04-04 14:58:11,346 - INFO - Starting closing script
+2025-04-04 14:58:11,346 - INFO - Order Type: BUY detected, selling to exit.
+2025-04-04 14:58:11,392 - INFO - No shares to exit. Exiting script.
