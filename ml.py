@@ -31,7 +31,6 @@ def get_overnight_percent_change():
     del data['others_dr']
     del data['others_dlr']
 
-    print(data)
     
     print(data)
     print("done")
