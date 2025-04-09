@@ -1,6 +1,7 @@
 import logging
 import pickle
 import yfinance as yf
+import sqlite3
 
 # Configure logging
 logging.basicConfig(
@@ -41,43 +42,79 @@ available_cash = account.cash
 
 
 stock = yf.Ticker("TQQQ")
-data = stock.history()
-data = data.tail(2)  # Get the last two rows (yesterday and today)
+data = stock.history(period="252d")
+data = data.drop(columns=["Dividends", "Stock Splits"])
+data = data.drop(columns=["Capital Gains"])
+data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
+data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
+
+# volume the day before
+data["Volume"] = data["Volume"].shift(1)
+
+
+
+#data = data.tail)  # Get the last two rows (yesterday and today)
 logging.info("Fetched stock data for TQQQ")
 logging.info(str(data))
+
+import ta
+
+data_with_ta = ta.add_all_ta_features(data, open="Open", high="High", low="Low", close="Close", volume="Volume", fillna=True)
+
+del data_with_ta['others_dr']
+del data_with_ta['others_dlr']
+
+# read the top features from disk into a list
+with open('top_features.txt', 'r') as f:
+    top_features = f.read().splitlines()
+
+
+#print(data_with_ta[top_features])
+
+
 
 
 if now.hour < 12:
     logging.info("Starting opening script")
     # read model from file
-    model_filename = 'Naive_Bayes_model.sav'
+    model_filename = 'Ensemble_model.sav'
 
     clf = pickle.load(open('./models/'+model_filename, 'rb'))
 
-    
+    entry_price = data["Open"].iloc[-1]
+
+
+    '''
     try:
-        entry_price = data["Open"].iloc[1]
-        close_yesterday = data["Close"].iloc[0]
-        open_today = data["Open"].iloc[1]
+        # make entry price be the most recent open price
+        entry_price = data["Open"].iloc[-1]
+        # make the close yesterday be the last close price before today
+        close_yesterday = data["Close"].iloc[-2]
+        # make the open today be the most recent open price
+        open_today = data["Open"].iloc[-1]
     except Exception as e:
         logging.error(f"Error fetching today's open price: {e}")
         logging.info("Exiting script due to missing open price data.")
         exit(1)
     overnight_percent_change = (open_today - close_yesterday) / close_yesterday
-
-
+    data['Overnight Percent Change'] = overnight_percent_change
+    
     # get yesterdays volume
-    yesterdays_volume = data["Volume"].iloc[0]
+    #yesterdays_volume = data["Volume"].iloc[0]
+    '''
 
     # predict
-    prediction = clf.predict([[overnight_percent_change, yesterdays_volume]])[0]    
+    prediction = clf.predict(data_with_ta[top_features].tail(1))[0]
+    print(top_features)
+    print("prediction", prediction)
+    logging.info(f"Top features: {top_features}")
     logging.info(f"Prediction: {prediction}")
 
-    quantity = math.floor( (float(available_cash) / float(entry_price) )) - 3
+    quantity = math.floor( (float(available_cash) / float(entry_price) )) - 4
 
-    
-    logging.info(f"Number of shares: {quantity}")
+    logging.info(f"Available Cash: {available_cash}")
     logging.info(f"Entry Price: {entry_price}")
+    logging.info(f"Number of shares: {quantity}")
 
     if prediction == 1:
         order_type = OrderSide.BUY
@@ -89,15 +126,12 @@ if now.hour < 12:
         with open('order_type.txt', 'w') as f:
             f.write(str('SELL'))
         logging.info(f"Order Type: SELL")
-
-    # insert prediction into sqlite3 table
-    import sqlite3
-    conn = sqlite3.connect('predictions.db')
+        
     this_row = data.tail(1)
     this_row['Prediction'] = prediction
     # add todays date to the row
     this_row['Date'] = now.strftime("%Y-%m-%d")
-    this_row.to_sql('predictions', conn, if_exists='append', index=False)    
+    
 
     logging.info("Placing order")
     order_request = OrderRequest(
@@ -111,7 +145,9 @@ if now.hour < 12:
     )
     try:
         order_submission_response = trading_client.submit_order(order_data=order_request)
-        print(dir(trading_client))
+        
+        
+        '''
         # sleep for 10 seconds
         time.sleep(10)
 
@@ -123,9 +159,16 @@ if now.hour < 12:
         else:
             logging.warning(f"Order not filled, current status: {order_status.status}")
 
+        '''
     except Exception as e:
         logging.error(f"Error while submitting order: {e}")
-        exit(1)
+    
+    try:
+        conn = sqlite3.connect('predictions.db')
+        this_row.to_sql('predictions', conn, if_exists='append', index=False)    
+    except Exception as e:
+        logging.error(f"Error inserting prediction into database: {e}")
+        
     exit()
 
 # check if code is being run after noon
@@ -147,6 +190,8 @@ if now.hour > 12:
     quantity = 0
     # determine how many shares we hold
     positions = trading_client.get_all_positions()
+    logging.info("Current positions:")
+    logging.info(str(positions))
     for position in positions:
         if position.symbol == "TQQQ":
             quantity = position.qty
