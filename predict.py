@@ -52,27 +52,44 @@ try:
 except Exception as e:
     logging.error(f"Error fetching stock data: {e}")
     exit(1)
-    
-data = data.drop(columns=["Dividends", "Stock Splits"])
-data = data.drop(columns=["Capital Gains"])
-data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
-data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
 
-# volume the day before
-data["Volume"] = data["Volume"].shift(1)
+logging.info("Fetched stock data for TQQQ")
+
+try:
+    data = data.drop(columns=["Dividends", "Stock Splits", "Capital Gains"])
+    
+    data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
+    data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
+
+    # volume the day before
+    #data["Volume"] = data["Volume"].shift(1)
+    
+    # shift all columns that arent open high low close 
+    for col in data.columns:
+        if col not in ['Open', 'High', 'Low', 'Close', 'Volume', 'Percent Change', 'Overnight Percent Change']:
+            data[col] = data[col].shift(1)
+except Exception as e:
+    logging.error(f"Error processing stock data: {e}")
+    exit(1)
+
 
 
 
 #data = data.tail)  # Get the last two rows (yesterday and today)
-logging.info("Fetched stock data for TQQQ")
-logging.info(str(data))
+
+
 
 import ta
 
-data_with_ta = ta.add_all_ta_features(data, open="Open", high="High", low="Low", close="Close", volume="Volume", fillna=True)
+try:
+    data_with_ta = ta.add_all_ta_features(data, open="Open", high="High", low="Low", close="Close", volume="Volume", fillna=True)
+    del data_with_ta['others_dr']
+    del data_with_ta['others_dlr']
+except Exception as e:
+    logging.error(f"Error adding technical indicators: {e}")
+    exit(1)
 
-del data_with_ta['others_dr']
-del data_with_ta['others_dlr']
+
 
 # read the top features from disk into a list
 with open('top_features.txt', 'r') as f:
@@ -87,7 +104,7 @@ with open('top_features.txt', 'r') as f:
 if now.hour < 12:
     logging.info("Starting opening script")
     # read model from file
-    model_filename = 'Ensemble_model.sav'
+    model_filename = 'Logistic_Regression_model.sav'
 
     clf = pickle.load(open('./models/'+model_filename, 'rb'))
 

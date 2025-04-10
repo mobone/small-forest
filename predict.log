@@ -22,3 +22,31 @@ Date
 2025-04-10 09:26:25,429 - INFO - Number of shares: 509
 2025-04-10 09:26:25,430 - INFO - Order Type: BUY
 2025-04-10 09:26:25,434 - INFO - Placing order
+2025-04-10 13:50:16,477 - INFO - Program starting
+2025-04-10 13:50:18,384 - INFO - Fetched stock data for TQQQ
+2025-04-10 13:50:18,506 - INFO - Starting closing script
+2025-04-10 13:50:18,507 - INFO - Order Type: BUY detected, selling to exit.
+2025-04-10 13:50:18,558 - INFO - Current positions:
+2025-04-10 13:50:18,558 - INFO - [{   'asset_class': <AssetClass.US_EQUITY: 'us_equity'>,
+    'asset_id': UUID('dce2ac30-c928-4416-be25-2213d057f30a'),
+    'asset_marginable': False,
+    'avg_entry_price': '48.19',
+    'avg_entry_swap_rate': None,
+    'change_today': '-0.1072058544003041',
+    'cost_basis': '24528.71',
+    'current_price': '46.9699',
+    'exchange': <AssetExchange.NASDAQ: 'NASDAQ'>,
+    'lastday_price': '52.61',
+    'market_value': '23907.6791',
+    'qty': '509',
+    'qty_available': '509',
+    'side': <PositionSide.LONG: 'long'>,
+    'swap_rate': None,
+    'symbol': 'TQQQ',
+    'unrealized_intraday_pl': '-621.0309',
+    'unrealized_intraday_plpc': '-0.0253185308155219',
+    'unrealized_pl': '-621.0309',
+    'unrealized_plpc': '-0.0253185308155219',
+    'usd': None}]
+2025-04-10 13:50:18,558 - INFO - Current position quantity: 509
+2025-04-10 13:50:18,559 - INFO - Placing order

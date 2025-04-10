@@ -24,13 +24,19 @@ def get_overnight_percent_change():
     data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
 
     # volume the day before
-    data["Volume"] = data["Volume"].shift(1)
+    #data["Volume"] = data["Volume"].shift(1)
 
     data = ta.add_all_ta_features(data, open="Open", high="High", low="Low", close="Close", volume="Volume", fillna=True)
 
     del data['others_dr']
     del data['others_dlr']
 
+    
+    # shift all columns that arent open high low close 
+    for col in data.columns:
+        if col not in ['Open', 'High', 'Low', 'Close', 'Volume', 'Percent Change', 'Overnight Percent Change']:
+            data[col] = data[col].shift(1)
+    
     
     print(data)
     print("done")
@@ -72,6 +78,7 @@ X = data.copy()
 
 y = np.where(data["Percent Change"] > 0, 1, -1)
 del X['Percent Change']
+del X['Close']
 
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -108,12 +115,16 @@ feature_names = X.columns
 
 # make a sorted list of the feature importances
 sorted_importances = sorted(zip(importance_vals, feature_names), reverse=True)
+
+
+
+
 print("Feature importances:")
 for importance, name in sorted_importances:
     print(f"{name}: {importance:.4f}")
 
 # use the top features
-top_features = [name for importance, name in sorted_importances[:10]]
+top_features = [name for importance, name in sorted_importances[:15]]
 
 # write the top features to disk
 with open('top_features.txt', 'w') as f:
