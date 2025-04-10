@@ -22,6 +22,8 @@ import datetime
 import time
 import math 
 
+logging.info("Program starting")
+
 now = datetime.datetime.now()
 
 config = ConfigParser()
@@ -35,14 +37,22 @@ trading_client = TradingClient(
     paper=True
 )
 
-account = trading_client.get_account()
-available_cash = account.cash
+try:
+    account = trading_client.get_account()
+    available_cash = account.cash
+except Exception as e:
+    logging.error(f"Error fetching account information: {e}")
+    exit(1)
 
 
 
-
-stock = yf.Ticker("TQQQ")
-data = stock.history(period="252d")
+try:
+    stock = yf.Ticker("TQQQ")
+    data = stock.history(period="252d")
+except Exception as e:
+    logging.error(f"Error fetching stock data: {e}")
+    exit(1)
+    
 data = data.drop(columns=["Dividends", "Stock Splits"])
 data = data.drop(columns=["Capital Gains"])
 data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
