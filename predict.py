@@ -56,7 +56,7 @@ except Exception as e:
 logging.info("Fetched stock data for TQQQ")
 
 try:
-    data = data.drop(columns=["Dividends", "Stock Splits", "Capital Gains"])
+    
     
     data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
     data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
@@ -219,6 +219,11 @@ if now.hour > 12:
     positions = trading_client.get_all_positions()
     logging.info("Current positions:")
     logging.info(str(positions))
+    # if no positions exit
+    if not positions:
+        logging.info("No current positions. Exiting script.")
+        exit(0)
+
     for position in positions:
         if position.symbol == "TQQQ":
             quantity = position.qty

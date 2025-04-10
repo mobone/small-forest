@@ -13,13 +13,15 @@ def get_stock_history(ticker):
 
     #data = dat.history(period="60d", interval="5m")
     data = stock.history(period="252d")
-    data = data.drop(columns=["Dividends", "Stock Splits"])
+    print(data)
+    print("history before manipulation")
+    input()
 
     return data
 
-def get_overnight_percent_change():
+def get_history_and_ta():
     data = get_stock_history("TQQQ")
-    data = data.drop(columns=["Capital Gains"])
+    
     data["Percent Change"] = (data["Close"] - data["Open"]) / data["Open"]
     data["Overnight Percent Change"] = (data["Open"] - data["Close"].shift(1)) / data["Close"].shift(1)
 
@@ -38,9 +40,7 @@ def get_overnight_percent_change():
             data[col] = data[col].shift(1)
     
     
-    print(data)
-    print("done")
-    input()
+    
     
 
 
@@ -59,12 +59,14 @@ def get_overnight_percent_change():
     
     data = data.dropna()
     print(data)
+    input()
+    
     
 
     return data
 
 
-data = get_overnight_percent_change()
+data = get_history_and_ta()
 
 
 
@@ -124,7 +126,7 @@ for importance, name in sorted_importances:
     print(f"{name}: {importance:.4f}")
 
 # use the top features
-top_features = [name for importance, name in sorted_importances[:15]]
+top_features = [name for importance, name in sorted_importances[:20]]
 
 # write the top features to disk
 with open('top_features.txt', 'w') as f:
@@ -184,7 +186,7 @@ for clf, label in zip([clf1, clf2, clf3, eclf], labels):
     output_df["Actual"] = y_test
     output_df["Predicted"] = pred
     print("predicted numbers")
-    print(pred)
+    print(output_df)
     
     # add column of percent change
     output_df["Percent Change"] = data["Percent Change"]
